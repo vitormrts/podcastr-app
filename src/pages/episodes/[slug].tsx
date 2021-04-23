@@ -9,6 +9,8 @@ import { api } from '../../services/api'
 import { convertDurationToTimeString } from '../../utils/convertDurationToTimeString'
 
 import styles from './episode.module.scss'
+import { usePlayer } from '../../contexts/PlayerContext'
+import Head from 'next/head'
 
 type Episode = {
     id: string,
@@ -27,6 +29,7 @@ type EpisodeProps = {
 }
 
 export default function Episode({ episode }: EpisodeProps ) {
+    const { play } = usePlayer()
     // const router = useRouter()
 
     // if (router.isFallback) { // episodio esta carregando
@@ -35,6 +38,9 @@ export default function Episode({ episode }: EpisodeProps ) {
 
     return (
         <div className={styles.episodeContainer}>
+            <Head>
+                <title>{episode.title} | Podcastr</title>
+            </Head>
             <div className={styles.thumbnailContainer}>
                 <Link href="/">
                     <button type="button">
@@ -42,7 +48,7 @@ export default function Episode({ episode }: EpisodeProps ) {
                     </button>
                 </Link>
                 <Image width={700} height={160} src={episode.thumbnail} objectFit="cover"/>
-                <button type="button">
+                <button onClick={() => play(episode)} type="button">
                     <img src="/play.svg" alt="Tocar episódio"/>
                 </button>
             </div>
@@ -85,7 +91,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     }
 }
 
-export const getStaticProps: GetStaticProps = async(ctx) => {
+export const getStaticProps: GetStaticProps = async(ctx) => { // a mesma pagina eh disponibilizada para o usuario num trecho de 24 hrs, evitando novas geracoes dela mesma cada vez q um usuario entra
     const { slug } = ctx.params // pega o nome do episodio
     const { data } = await api.get(`/episodes/${slug}`)
 

@@ -3,18 +3,19 @@
 // SPA => useEffect() -> nao carrega se desabilitar o JS
 // SSR => getServerSideProps() -> carrega a API antes de abrir a pagina
 // SSG => gera uma versao estatica, isto eh, a mesma pagina eh disponibilizada num determinado tempo (nao precisa fazer novas requisicoes, deixa a pagina mais performatica)
+import { usePlayer } from '../contexts/PlayerContext'
 
 import { GetStaticProps } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import Head from 'next/head'
 import { format, parseISO } from 'date-fns'
 import ptBR from 'date-fns/locale/pt-BR'
 import { api } from '../services/api'
 import { convertDurationToTimeString } from '../utils/convertDurationToTimeString'
 
 import styles from './home.module.scss'
-import { useContext } from 'react'
-import { PlayerContext } from '../contexts/PlayerContext'
+
 
 type Episode = {
   id: string,
@@ -32,22 +33,25 @@ type HomeProps = {
   allEpisodes: Episode[]
 }
 
-
-
 export default function Home({ latestEpisodes, allEpisodes }: HomeProps) {
-  const { play } = useContext(PlayerContext)
+  const { playList } = usePlayer()
   // useEffect(() => {
   //   fetch('http://localhost:3333/episodes')
   //     .then(response => response.json())
   //       .then(data => console.log(data))
   // }, [])
+  const episodeList = [...latestEpisodes, ...allEpisodes]
+
   return (
     <div className={styles['homeContainer']}>
+      <Head>
+        <title>Home | Podcastr</title>
+      </Head>
         <section className={styles.latestEpisodes}>
           <h2>Últimos lançamentos {}</h2>
 
           <ul>
-            { latestEpisodes.map(episode => {
+            { latestEpisodes.map((episode, index) => {
               return (
                 <li key={episode.id}> {/* a key evita possiveis renderizacoes desnecessarias */}
                   <Image width={192} objectFit="cover" height={192} src={episode.thumbnail}  alt={episode.title}/>
@@ -61,7 +65,7 @@ export default function Home({ latestEpisodes, allEpisodes }: HomeProps) {
                     <span>{episode.durationAsString}</span>
                   </div>
                   
-                  <button type="button" onClick={() => play(episode)}>
+                  <button type="button" onClick={() => playList(episodeList, index)}>
                     <img src="/play-green.svg" alt="Tocar episódio"/>
                   </button>
                 </li>
@@ -83,7 +87,7 @@ export default function Home({ latestEpisodes, allEpisodes }: HomeProps) {
                 </tr>
               </thead>
               <tbody>
-                { allEpisodes.map(episode => {
+                { allEpisodes.map((episode, index) => {
                   return (
                     <tr key={episode.id}>
                       <td style={{ width: 72 }}>
@@ -104,12 +108,12 @@ export default function Home({ latestEpisodes, allEpisodes }: HomeProps) {
                       <td style={{ width: 100 }}>{episode.publishedAt}</td>
                       <td>{episode.durationAsString}</td>
                       <td>
-                        <button type="button" onClick={() => play(episode)}>
+                        <button type="button" onClick={() => playList(episodeList, index + latestEpisodes.length)}>
                           <img src="/play-green.svg" alt="Tocar episódio"/>
                         </button>
                       </td>
                     </tr>
-                  )
+                  ) 
                 }) }
               </tbody>
             </table>
@@ -118,7 +122,7 @@ export default function Home({ latestEpisodes, allEpisodes }: HomeProps) {
   )
 }
 
-export const getStaticProps:GetStaticProps = async () => { // a mesma pagina eh disponibilizada para o usuario num trecho de tempo (sem atts constantes)
+export const getStaticProps:GetStaticProps = async () => { // a mesma pagina eh disponibilizada para o usuario num trecho de tempo (sem atts constantes, evitando a geracao de uma nova pagina toda vez q eh acessada)
     const { data } = await api.get('episodes', {
       params: {
         _limit: 12,
@@ -141,7 +145,7 @@ export const getStaticProps:GetStaticProps = async () => { // a mesma pagina eh 
     })
 
     const latestEpisodes = episodes.slice(0, 2);
-    const allEpisodes = episodes.slice(0, episodes.length)
+    const allEpisodes = episodes.slice(2, episodes.length)
 
     return {
       props: {
