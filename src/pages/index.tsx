@@ -13,6 +13,8 @@ import { api } from '../services/api'
 import { convertDurationToTimeString } from '../utils/convertDurationToTimeString'
 
 import styles from './home.module.scss'
+import { useContext } from 'react'
+import { PlayerContext } from '../contexts/PlayerContext'
 
 type Episode = {
   id: string,
@@ -33,6 +35,7 @@ type HomeProps = {
 
 
 export default function Home({ latestEpisodes, allEpisodes }: HomeProps) {
+  const { play } = useContext(PlayerContext)
   // useEffect(() => {
   //   fetch('http://localhost:3333/episodes')
   //     .then(response => response.json())
@@ -41,7 +44,7 @@ export default function Home({ latestEpisodes, allEpisodes }: HomeProps) {
   return (
     <div className={styles['homeContainer']}>
         <section className={styles.latestEpisodes}>
-          <h2>Últimos lançamentos</h2>
+          <h2>Últimos lançamentos {}</h2>
 
           <ul>
             { latestEpisodes.map(episode => {
@@ -58,7 +61,7 @@ export default function Home({ latestEpisodes, allEpisodes }: HomeProps) {
                     <span>{episode.durationAsString}</span>
                   </div>
                   
-                  <button type="button">
+                  <button type="button" onClick={() => play(episode)}>
                     <img src="/play-green.svg" alt="Tocar episódio"/>
                   </button>
                 </li>
@@ -101,7 +104,7 @@ export default function Home({ latestEpisodes, allEpisodes }: HomeProps) {
                       <td style={{ width: 100 }}>{episode.publishedAt}</td>
                       <td>{episode.durationAsString}</td>
                       <td>
-                        <button type="button">
+                        <button type="button" onClick={() => play(episode)}>
                           <img src="/play-green.svg" alt="Tocar episódio"/>
                         </button>
                       </td>

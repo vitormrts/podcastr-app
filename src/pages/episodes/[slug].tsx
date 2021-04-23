@@ -2,7 +2,7 @@ import { parseISO } from 'date-fns'
 import ptBR from 'date-fns/locale/pt-BR'
 import { GetStaticPaths, GetStaticProps } from 'next'
 import { format } from 'date-fns'
-import { useRouter } from 'next/router'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { api } from '../../services/api'
@@ -27,11 +27,11 @@ type EpisodeProps = {
 }
 
 export default function Episode({ episode }: EpisodeProps ) {
-    const router = useRouter()
+    // const router = useRouter()
 
-    if (router.isFallback) { // episodio esta carregando
-        return <p>Carregando...</p>
-    }
+    // if (router.isFallback) { // episodio esta carregando
+    //     return <p>Carregando...</p> // usar se fallback for true
+    // }
 
     return (
         <div className={styles.episodeContainer}>
@@ -81,7 +81,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
         // retorna 404 se n tiver path e fallback for false 
         // se fallback for true e o episodio n foi gerado de forma estatica (paths vazio), eh gerado qnd o usuario entre na pagina
         // fallback no blocking faz a pagina carregar o conteudo so quando tu tiver pronto
-        fallback: true, 
+        fallback: 'blocking', 
     }
 }
 
